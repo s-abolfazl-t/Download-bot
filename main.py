@@ -2,7 +2,7 @@ import os
 from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
 from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 
-TOKEN = os.getenv("BOT_TOKEN")
+TOKEN = os.getenv("7997152613:AAHfRDUX1SHAA_CWFdTsPj4yxnYCjjUvprA")
 
 # --- دکمه‌های منو اصلی ---
 def start_keyboard():
