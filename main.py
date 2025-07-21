@@ -1,50 +1,43 @@
-from telegram import Update, ReplyKeyboardMarkup
-from telegram.ext import ApplicationBuilder, CommandHandler, MessageHandler, filters, ContextTypes
-from youtube import download_youtube
-from instagram import download_instagram
 import os
+from telegram import Update, InlineKeyboardMarkup, InlineKeyboardButton
+from telegram.ext import Application, CommandHandler, MessageHandler, CallbackQueryHandler, ContextTypes, filters
 
 TOKEN = os.getenv("BOT_TOKEN")
 
-menu_keyboard = [["📥 دانلود از یوتیوب"], ["📥 دانلود از اینستاگرام"]]
-state = {}
+# --- دکمه‌های منو اصلی ---
+def start_keyboard():
+    keyboard = [
+        [InlineKeyboardButton("🔴 دانلود از یوتیوب", callback_data='youtube')],
+        [InlineKeyboardButton("🟣 دانلود از اینستاگرام", callback_data='instagram')],
+    ]
+    return InlineKeyboardMarkup(keyboard)
 
+# --- استارت ---
 async def start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     await update.message.reply_text(
-        "سلام! یکی از گزینه‌های زیر رو انتخاب کن:",
-        reply_markup=ReplyKeyboardMarkup(menu_keyboard, resize_keyboard=True)
+        "سلام! یکی از گزینه‌ها رو انتخاب کن:", reply_markup=start_keyboard()
     )
 
-async def handle_message(update: Update, context: ContextTypes.DEFAULT_TYPE):
-    user_id = update.message.from_user.id
-    text = update.message.text
+# --- هندل انتخاب از منو ---
+async def button_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    query = update.callback_query
+    await query.answer()
 
-    if text == "📥 دانلود از یوتیوب":
-        state[user_id] = "youtube"
-        await update.message.reply_text("لینک یوتیوب رو بفرست:")
-    elif text == "📥 دانلود از اینستاگرام":
-        state[user_id] = "instagram"
-        await update.message.reply_text("لینک اینستاگرام رو بفرست:")
-    elif user_id in state:
-        kind = state[user_id]
-        if kind == "youtube":
-            path = download_youtube(text)
-            await update.message.reply_document(document=open(path, "rb"))
-        elif kind == "instagram":
-            file_paths = download_instagram(text)
-            for path in file_paths:
-                await update.message.reply_document(document=open(path, "rb"))
-        else:
-            await update.message.reply_text("اول انتخاب کن که از کجا می‌خوای دانلود کنی.")
-    else:
-        await update.message.reply_text("اول یکی از گزینه‌های کیبورد رو انتخاب کن.")
+    if query.data == 'youtube':
+        await query.message.reply_text("لینک ویدیوی یوتیوب رو بفرست:")
+        context.user_data['mode'] = 'youtube'
+    elif query.data == 'instagram':
+        await query.message.reply_text("لینک پست اینستاگرام رو بفرست:")
+        context.user_data['mode'] = 'instagram'
 
-def main():
-    app = ApplicationBuilder().token(TOKEN).build()
-    app.add_handler(CommandHandler("start", start))
-    app.add_handler(MessageHandler(filters.TEXT & ~filters.COMMAND, handle_message))
-    app.run_polling()
+# --- هندل پیام‌های متنی (لینک‌ها) ---
+async def handle_link(update: Update, context: ContextTypes.DEFAULT_TYPE):
+    mode = context.user_data.get('mode')
+    url = update.message.text.strip()
 
-if __name__ == "__main__":
-    os.makedirs("downloads", exist_ok=True)
-    main()
+    if mode == 'youtube':
+        await update.message.reply_text(f"در حال پردازش لینک یوتیوب:\n{url}")
+        # TODO: کد دانلود از یوتیوب
+    elif mode == 'instagram':
+        await update.message.reply_text(f"در حال پردازش لینک اینستاگرام:\n{url}")
+        # TODO: کد دانلود از اینستاگ
