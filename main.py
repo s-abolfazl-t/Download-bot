@@ -3,7 +3,7 @@ from telegram import Update, ReplyKeyboardMarkup
 from telegram.ext import ApplicationBuilder, ContextTypes, MessageHandler, CommandHandler, filters
 import yt_dlp
 
-BOT_TOKEN = os.getenv("BOT_TOKEN")
+BOT_TOKEN = os.getenv("7997152613:AAHfRDUX1SHAA_CWFdTsPj4yxnYCjjUvprA")
 
 keyboard = ReplyKeyboardMarkup([["📥 دانلود از یوتیوب", "📥 دانلود از اینستاگرام"]], resize_keyboard=True)
 
